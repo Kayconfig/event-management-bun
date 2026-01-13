@@ -1,0 +1,10 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: event-booking-db
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=event_booking
