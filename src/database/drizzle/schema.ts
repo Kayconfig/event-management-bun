@@ -1,4 +1,5 @@
 import {
+  index,
   integer,
   pgTable,
   timestamp,
@@ -14,15 +15,22 @@ export const users = pgTable('users', {
   createdAt: timestamp('created_at').defaultNow(),
 });
 
-export const events = pgTable('events', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  name: varchar('name', { length: 255 }).notNull(),
-  userId: uuid('user_id')
-    .notNull()
-    .references(() => users.id),
-  totalSeats: integer('total_seats').notNull(),
-  createdAt: timestamp('created_at').defaultNow(),
-});
+export const events = pgTable(
+  'events',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    name: varchar('name', { length: 255 }).notNull(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id),
+
+    totalSeats: integer('total_seats').notNull(),
+    createdAt: timestamp('created_at').defaultNow(),
+  },
+  (table) => ({
+    userIdIdx: index('user_id_idx').on(table.userId),
+  })
+);
 
 export const reservations = pgTable(
   'reservations',

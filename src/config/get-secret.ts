@@ -1,7 +1,6 @@
 import {
   coerce as zCoerce,
   type infer as zInfer,
-  number as zNumber,
   object as zObject,
   string as zString,
 } from 'zod';
@@ -19,7 +18,7 @@ const secretsSchema = zObject({
     ),
   ACCESS_TOKEN_EXPIRES: zString().nonempty(),
   REDIS_HOST: zString().nonempty(),
-  REDIS_PORT: zNumber().gt(0),
+  REDIS_PORT: zCoerce.number().gt(0),
   NODE_ENV: zString().default('development'),
 });
 

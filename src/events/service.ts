@@ -1,3 +1,4 @@
+import type { OffsetPaginationDto } from '../common/dtos/offset-pagination.dto';
 import type { Event, Reservation } from '../database/drizzle/schema';
 import type { DistributedService } from '../redis/interfaces/distributed-service';
 import type { ReservationService } from '../reservations/interfaces/reservation-service';
@@ -70,5 +71,12 @@ export function createEventsService(
     });
   };
 
-  return { findById, reserveSeat, createEvent };
+  const findByUserId = async (
+    userId: string,
+    paginationParams: OffsetPaginationDto
+  ): Promise<Event[]> => {
+    return await repo.findByUserId(userId, paginationParams);
+  };
+
+  return { findById, reserveSeat, createEvent, findByUserId };
 }

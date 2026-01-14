@@ -1,6 +1,7 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { treeifyError } from 'zod';
 import { fastifyResponse } from '../common/api/response/fastify-response';
+import { offSetPaginationSchemaDto } from '../common/dtos/offset-pagination.dto';
 import { dependencyUtils } from '../common/utils/dependency-utils';
 import { createEventSchema } from './dtos/create-event-dto';
 import { ErrEventNotFound } from './errors/err-event-not-found';
@@ -10,9 +11,6 @@ export function eventRoute(app: FastifyInstance) {
 
   const findById = async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      reply.headers({
-        'content-type': 'application/json',
-      });
       const eventId = (request.params as { eventId?: string }).eventId;
       if (!eventId) {
         return fastifyResponse.sendBadRequestResponse(reply, [
@@ -72,6 +70,23 @@ export function eventRoute(app: FastifyInstance) {
     );
   };
 
+  const findByUserId = async (request: FastifyRequest, reply: FastifyReply) => {
+    const paginationParseResult =
+      await offSetPaginationSchemaDto.safeParseAsync(request.query);
+    if (paginationParseResult.error) {
+      return fastifyResponse.sendBadRequestResponse(
+        reply,
+        treeifyError(paginationParseResult.error).errors
+      );
+    }
+    const authUser = request.user;
+    const events = await eventService.findByUserId(
+      authUser.userId,
+      paginationParseResult.data
+    );
+    return fastifyResponse.sendOkResponse(reply, { events }, 'successful');
+  };
+
   app.post(
     '/events',
     {
@@ -86,6 +101,14 @@ export function eventRoute(app: FastifyInstance) {
       onRequest: [app.authenticate],
     },
     findById
+  );
+
+  app.get(
+    '/events',
+    {
+      onRequest: [app.authenticate],
+    },
+    findByUserId
   );
 
   app.post(

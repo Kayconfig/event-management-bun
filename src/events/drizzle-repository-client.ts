@@ -23,5 +23,14 @@ export function createEventsDrizzleRepository(
       }
       return event;
     },
+    async findByUserId(userId, paginationParams) {
+      const { limit, skip } = paginationParams;
+      const userEvents = await db.query.events.findMany({
+        where: eq(events.userId, userId),
+        offset: skip,
+        limit,
+      });
+      return userEvents;
+    },
   };
 }

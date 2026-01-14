@@ -8,19 +8,22 @@ import {
 const minNameLength = 2;
 const minTotalSeats = 1;
 const maxTotalSeats = 10_000;
-export const createEventSchema = zObject({
-  name: zString('name must be string')
-    .nonempty()
-    .min(minNameLength, `name length cannot be less than ${minNameLength}`),
-  totalSeats: zNumber('totalSeats must be a number')
-    .gte(
-      minTotalSeats,
-      `totalSeats must be greater than or equal to ${minTotalSeats}`
-    )
-    .lte(
-      maxTotalSeats,
-      `totalSeats must be less than or equal to ${maxTotalSeats}`
-    ),
-});
+export const createEventSchema = zObject(
+  {
+    name: zString('name must be string')
+      .nonempty()
+      .min(minNameLength, `name length cannot be less than ${minNameLength}`),
+    totalSeats: zNumber('totalSeats must be a number')
+      .gte(
+        minTotalSeats,
+        `totalSeats must be greater than or equal to ${minTotalSeats}`
+      )
+      .lte(
+        maxTotalSeats,
+        `totalSeats must be less than or equal to ${maxTotalSeats}`
+      ),
+  },
+  { error: `expected body to contain 'name', 'totalSeats', received undefined` }
+);
 
 export type CreateEventDto = zInfer<typeof createEventSchema>;
