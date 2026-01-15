@@ -4,6 +4,7 @@ import { fastifyResponse } from '../common/api/response/fastify-response';
 import { offSetPaginationSchemaDto } from '../common/dtos/offset-pagination.dto';
 import { ErrInternal } from '../common/errors/err-internal.error';
 import { dependencyUtils } from '../common/utils/dependency-utils';
+import { validateUUID } from '../common/validation/validate-uuid';
 import { createEventSchema } from './dtos/create-event-dto';
 import { ErrEventFullyBooked } from './errors/err-event-fully-booked';
 import { ErrEventNotFound } from './errors/err-event-not-found';
@@ -13,12 +14,16 @@ export function eventRoute(app: FastifyInstance) {
 
   const findById = async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const eventId = (request.params as { eventId?: string }).eventId;
-      if (!eventId) {
-        return fastifyResponse.sendBadRequestResponse(reply, [
-          'eventId must be passed',
-        ]);
+      const eventIdParseResult = await validateUUID(
+        (request.params as { eventId?: string }).eventId
+      );
+      if (eventIdParseResult.error) {
+        return fastifyResponse.sendBadRequestResponse(
+          reply,
+          treeifyError(eventIdParseResult.error).errors
+        );
       }
+      const eventId = eventIdParseResult.data;
 
       const event = await eventService.findById(eventId);
 
@@ -34,12 +39,17 @@ export function eventRoute(app: FastifyInstance) {
 
   const reserveSeat = async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const eventId = (request.params as { eventId?: string }).eventId;
-      if (!eventId) {
-        return fastifyResponse.sendBadRequestResponse(reply, [
-          'eventId must be passed',
-        ]);
+      const eventIdParseResult = await validateUUID(
+        (request.params as { eventId?: string }).eventId
+      );
+      if (eventIdParseResult.error) {
+        return fastifyResponse.sendBadRequestResponse(
+          reply,
+          treeifyError(eventIdParseResult.error).errors
+        );
       }
+      const eventId = eventIdParseResult.data;
+
       const { userId } = request.user;
       if (!userId) {
         throw ErrInternal.create(
@@ -57,6 +67,10 @@ export function eventRoute(app: FastifyInstance) {
         return fastifyResponse.sendForbiddenResponse(reply, [
           'event fully booked',
         ]);
+      }
+
+      if (error instanceof ErrEventNotFound) {
+        return fastifyResponse.sendNotFoundResponse(reply, ['event not found']);
       }
       app.log.error(error);
       throw error;

@@ -91,5 +91,14 @@ suite('Booking integration tests', { concurrency: false }, () => {
 
     assert.equal(re3.statusCode, 403);
   });
-  test.todo('Returns 404 if event does not exist', async () => {});
+  test('Returns 404 if event does not exist', async () => {
+    const unknownEventId = 'd6f505df-95dc-469d-bb7a-41475124a774';
+    const res = await app.inject({
+      method: 'post',
+      url: `/events/${unknownEventId}/reservations`,
+      headers: getAuth(),
+    });
+
+    assert.equal(res.statusCode, 404);
+  });
 });

@@ -23,7 +23,7 @@ function sendNotFoundResponse(reply: FastifyReply, errors: string[]) {
   reply.headers({
     'content-type': 'application/json',
   });
-  return reply.status(400).send(apiResponse.createNotFoundResponse(errors));
+  return reply.status(404).send(apiResponse.createNotFoundResponse(errors));
 }
 
 function sendCreatedResponse<Data>(
