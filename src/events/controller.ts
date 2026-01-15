@@ -2,8 +2,10 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { treeifyError } from 'zod';
 import { fastifyResponse } from '../common/api/response/fastify-response';
 import { offSetPaginationSchemaDto } from '../common/dtos/offset-pagination.dto';
+import { ErrInternal } from '../common/errors/err-internal.error';
 import { dependencyUtils } from '../common/utils/dependency-utils';
 import { createEventSchema } from './dtos/create-event-dto';
+import { ErrEventFullyBooked } from './errors/err-event-fully-booked';
 import { ErrEventNotFound } from './errors/err-event-not-found';
 
 export function eventRoute(app: FastifyInstance) {
@@ -30,7 +32,7 @@ export function eventRoute(app: FastifyInstance) {
     }
   };
 
-  const bookEvent = async (request: FastifyRequest, reply: FastifyReply) => {
+  const reserveSeat = async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const eventId = (request.params as { eventId?: string }).eventId;
       if (!eventId) {
@@ -38,13 +40,24 @@ export function eventRoute(app: FastifyInstance) {
           'eventId must be passed',
         ]);
       }
-      const { userId } = request.body as { userId: string };
+      const { userId } = request.user;
       if (!userId) {
-        return fastifyResponse.sendBadRequestResponse(reply, [
-          'userId must be provided in request body',
+        throw ErrInternal.create(
+          'reserveSeat failed, userId must be available to reserveSeat'
+        );
+      }
+      const reservation = await eventService.reserveSeat(eventId, userId);
+      return fastifyResponse.sendCreatedResponse(
+        reply,
+        { reservation },
+        'successful'
+      );
+    } catch (error) {
+      if (error instanceof ErrEventFullyBooked) {
+        return fastifyResponse.sendForbiddenResponse(reply, [
+          'event fully booked',
         ]);
       }
-    } catch (error) {
       app.log.error(error);
       throw error;
     }
@@ -116,6 +129,6 @@ export function eventRoute(app: FastifyInstance) {
     {
       onRequest: [app.authenticate],
     },
-    bookEvent
+    reserveSeat
   );
 }

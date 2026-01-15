@@ -1,6 +1,6 @@
+import type { FastifyBaseLogger } from 'fastify';
 import type { Redis } from 'ioredis';
 import Redlock from 'redlock';
-import type { LogCallback, WarnCallback } from '../common/types/logger';
 import type { DistributedService } from './interfaces/distributed-service';
 
 function createRedLockInstance(redisClients: Redis[]) {
@@ -14,7 +14,7 @@ function createRedLockInstance(redisClients: Redis[]) {
 
 export function createDistributedService(
   redisClients: Redis[],
-  logger: { log: LogCallback; warn: WarnCallback }
+  logger: FastifyBaseLogger
 ): DistributedService {
   const redlock = createRedLockInstance(redisClients);
   return {
@@ -22,10 +22,10 @@ export function createDistributedService(
       try {
         const ttlInMs = 10;
         const lock = await redlock.acquire(resourceKey, ttlInMs);
-        logger.log(`lock acquired for ${resourceKey}`);
+        logger.info(`lock acquired for ${resourceKey}`);
         return lock;
       } catch (error) {
-        logger.warn(`failed to get lock for ${resourceKey}`);
+        logger.info(`failed to get lock for ${resourceKey}`);
         return null;
       }
     },
@@ -33,10 +33,10 @@ export function createDistributedService(
     async releaseLock(lock) {
       if (lock) {
         try {
-          logger.log(`releasing lock ${lock.value}`);
+          logger.info(`releasing lock ${lock?.value}`);
           await redlock.release(lock);
         } catch (err) {
-          logger.warn(`failed to release lock`, err);
+          logger.info(`failed to release lock: ${lock?.value}`);
         }
       }
     },

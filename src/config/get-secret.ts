@@ -20,6 +20,7 @@ const secretsSchema = zObject({
   REDIS_HOST: zString().nonempty(),
   REDIS_PORT: zCoerce.number().gt(0),
   NODE_ENV: zString().default('development'),
+  TEST_DATABASE_URL: zString(),
 });
 
 const env = secretsSchema.parse(process.env);

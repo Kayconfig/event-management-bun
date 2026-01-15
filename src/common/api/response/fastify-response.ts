@@ -64,6 +64,14 @@ function sendConflictResponse(reply: FastifyReply, error: string[]) {
   return reply.status(409).send(apiResponse.createConflictResponse(error));
 }
 
+function sendForbiddenResponse(reply: FastifyReply, error: string[]) {
+  reply.headers({
+    'content-type': 'application/json',
+  });
+
+  return reply.status(403).send(apiResponse.createForbiddenResponse(error));
+}
+
 export const fastifyResponse = {
   sendOkResponse,
   sendBadRequestResponse,
@@ -72,4 +80,5 @@ export const fastifyResponse = {
   sendNotFoundResponse,
   sendUnauthorizedResponse,
   sendConflictResponse,
+  sendForbiddenResponse,
 };

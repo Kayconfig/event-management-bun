@@ -7,9 +7,7 @@ export async function initializeRedisModule(app: FastifyInstance) {
   const redisService = createRedisService();
   await redisService.connect();
   const redisClients = [redisService.getClient()];
-  const distributedService = createDistributedService(redisClients, {
-    log: app.log.info,
-    warn: app.log.warn,
-  });
+  const logger = app.log;
+  const distributedService = createDistributedService(redisClients, logger);
   dependencyUtils.setDistributedService(app, distributedService);
 }

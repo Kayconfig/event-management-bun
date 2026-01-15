@@ -43,6 +43,13 @@ const userServiceKey = 'userService';
 function setUserService(app: FastifyInstance, service: UserService) {
   app.decorate(userServiceKey, service);
 }
+/**
+ *
+ * @param app
+ * @returns userService instance
+ *
+ * @throws ErrServiceNotFound
+ */
 function getUserServiceOrThrow(
   app: FastifyInstance & { [userServiceKey]?: UserService }
 ): UserService {

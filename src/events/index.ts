@@ -9,7 +9,12 @@ export function initializeEventsModule(app: FastifyInstance) {
   const db = dbUtils.getDrizzleDb(app);
   const repo = createEventsRepository(db);
   const reservationService = dependencyUtils.getReservationServiceOrThrow(app);
-  const service = createEventsService(repo, reservationService);
+  const distributedService = dependencyUtils.getDistributedServiceOrThrow(app);
+  const service = createEventsService(
+    repo,
+    reservationService,
+    distributedService
+  );
   dependencyUtils.setEventService(app, service);
   app.register(eventRoute);
 }

@@ -57,6 +57,13 @@ function createConflictResponse(errors: string[]) {
     errors,
   };
 }
+function createForbiddenResponse(errors: string[]) {
+  return {
+    statusCode: 403,
+    message: 'forbidden',
+    errors,
+  };
+}
 
 export const apiResponse = {
   createCreatedResponse,
@@ -66,4 +73,5 @@ export const apiResponse = {
   createNotFoundResponse,
   sendUnauthorizedResponse,
   createConflictResponse,
+  createForbiddenResponse,
 };

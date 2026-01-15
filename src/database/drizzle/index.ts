@@ -1,11 +1,16 @@
-import { drizzle, NodePgDatabase } from 'drizzle-orm/node-postgres';
+import {
+  drizzle,
+  NodePgDatabase,
+  type NodePgClient,
+} from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
-import { getSecretOrThrow } from '../../config/get-secret';
 import { ErrDbNotInitialized } from '../errors/err-db-not-initialized';
 import * as schema from './schema';
 
-const pool = new Pool({ connectionString: getSecretOrThrow('DATABASE_URL') });
-export type DrizzleDbType = NodePgDatabase<typeof schema>;
+let pool: Pool | null = null;
+export type DrizzleDbType = NodePgDatabase<typeof schema> & {
+  $client: NodePgClient;
+};
 let db: DrizzleDbType | null = null;
 
 export function getDb(): DrizzleDbType {
@@ -15,9 +20,16 @@ export function getDb(): DrizzleDbType {
   return db;
 }
 
-export async function connectDb() {
+export async function connectDb(dbUrl: string) {
+  if (!pool) {
+    pool = new Pool({ connectionString: dbUrl });
+  }
   db = drizzle(pool, { schema });
+  return db;
 }
 export async function disconnectDb() {
+  if (!pool) {
+    throw new Error('database pool not initialized');
+  }
   await pool.end();
 }
