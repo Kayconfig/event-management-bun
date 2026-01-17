@@ -19,6 +19,7 @@ export interface EventsService {
    *
    * @throws ErrEventNotFound
    * @throws ErrEventFullyBooked
+   * @throws ErrHighDemandOnEvents
    */
   reserveSeat(eventId: string, userId: string): Promise<Reservation>;
 
@@ -28,4 +29,9 @@ export interface EventsService {
     userId: string,
     paginationParams: OffsetPaginationDto
   ): Promise<Event[]>;
+
+  findReservationsByUserId(
+    userId: string,
+    paginationParams: OffsetPaginationDto
+  ): Promise<Reservation[]>;
 }

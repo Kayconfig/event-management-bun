@@ -71,6 +71,15 @@ function sendForbiddenResponse(reply: FastifyReply, error: string[]) {
 
   return reply.status(403).send(apiResponse.createForbiddenResponse(error));
 }
+function sendTooManyRequestResponse(reply: FastifyReply, error: string[]) {
+  reply.headers({
+    'content-type': 'application/json',
+  });
+
+  return reply
+    .status(429)
+    .send(apiResponse.createTooManyRequestResponse(error));
+}
 
 export const fastifyResponse = {
   sendOkResponse,
@@ -81,4 +90,5 @@ export const fastifyResponse = {
   sendUnauthorizedResponse,
   sendConflictResponse,
   sendForbiddenResponse,
+  sendTooManyRequestResponse,
 };

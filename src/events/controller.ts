@@ -8,6 +8,7 @@ import { validateUUID } from '../common/validation/validate-uuid';
 import { createEventSchema } from './dtos/create-event-dto';
 import { ErrEventFullyBooked } from './errors/err-event-fully-booked';
 import { ErrEventNotFound } from './errors/err-event-not-found';
+import { ErrHighDemandOnEvents } from './errors/err-high-demand-on-event';
 
 export function eventRoute(app: FastifyInstance) {
   const eventService = dependencyUtils.getEventServiceOrThrow(app);
@@ -72,6 +73,12 @@ export function eventRoute(app: FastifyInstance) {
       if (error instanceof ErrEventNotFound) {
         return fastifyResponse.sendNotFoundResponse(reply, ['event not found']);
       }
+
+      if (error instanceof ErrHighDemandOnEvents) {
+        return fastifyResponse.sendTooManyRequestResponse(reply, [
+          'high demand for this event. Please retry shortly.',
+        ]);
+      }
       app.log.error(error);
       throw error;
     }
@@ -114,6 +121,30 @@ export function eventRoute(app: FastifyInstance) {
     return fastifyResponse.sendOkResponse(reply, { events }, 'successful');
   };
 
+  const findReservationsByUserId = async (
+    request: FastifyRequest,
+    reply: FastifyReply
+  ) => {
+    const paginationParseResult =
+      await offSetPaginationSchemaDto.safeParseAsync(request.query);
+    if (paginationParseResult.error) {
+      return fastifyResponse.sendBadRequestResponse(
+        reply,
+        treeifyError(paginationParseResult.error).errors
+      );
+    }
+    const authUser = request.user;
+    const reservations = await eventService.findReservationsByUserId(
+      authUser.userId,
+      paginationParseResult.data
+    );
+    return fastifyResponse.sendOkResponse(
+      reply,
+      { reservations },
+      'successful'
+    );
+  };
+
   app.post(
     '/events',
     {
@@ -144,5 +175,13 @@ export function eventRoute(app: FastifyInstance) {
       onRequest: [app.authenticate],
     },
     reserveSeat
+  );
+
+  app.get(
+    '/events/:eventId/reservations',
+    {
+      onRequest: [app.authenticate],
+    },
+    findReservationsByUserId
   );
 }

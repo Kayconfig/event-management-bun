@@ -78,5 +78,18 @@ export function createEventsService(
     return await repo.findByUserId(userId, paginationParams);
   };
 
-  return { findById, reserveSeat, createEvent, findByUserId };
+  const findReservationsByUserId = async (
+    userId: string,
+    paginationParams: OffsetPaginationDto
+  ): Promise<Reservation[]> => {
+    return await repo.findReservationsByUserId(userId, paginationParams);
+  };
+
+  return {
+    findById,
+    reserveSeat,
+    createEvent,
+    findByUserId,
+    findReservationsByUserId,
+  };
 }

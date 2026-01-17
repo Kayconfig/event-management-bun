@@ -64,6 +64,13 @@ function createForbiddenResponse(errors: string[]) {
     errors,
   };
 }
+function createTooManyRequestResponse(errors: string[]) {
+  return {
+    statusCode: 429,
+    message: 'too many requests',
+    errors,
+  };
+}
 
 export const apiResponse = {
   createCreatedResponse,
@@ -74,4 +81,5 @@ export const apiResponse = {
   sendUnauthorizedResponse,
   createConflictResponse,
   createForbiddenResponse,
+  createTooManyRequestResponse,
 };

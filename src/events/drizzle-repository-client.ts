@@ -32,5 +32,15 @@ export function createEventsDrizzleRepository(
       });
       return userEvents;
     },
+
+    async findReservationsByUserId(userId, paginationParams) {
+      const { limit, skip } = paginationParams;
+      const userReservations = await db.query.reservations.findMany({
+        where: eq(events.userId, userId),
+        offset: skip,
+        limit,
+      });
+      return userReservations;
+    },
   };
 }

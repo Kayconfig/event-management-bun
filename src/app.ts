@@ -42,9 +42,9 @@ export async function createApp(db: DrizzleDbType) {
 
   initializeUserModule(app);
   initializeReservationsModule(app);
+  await initializeRedisModule(app);
   initializeEventsModule(app);
   initializeAuthModule(app);
-  await initializeRedisModule(app);
 
   return app;
 }
